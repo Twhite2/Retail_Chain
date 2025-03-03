@@ -59,6 +59,25 @@ pub mod retailchain {
         
         Ok(())
     }
+
+    pub fn create_supply_agreement(
+        ctx: Context<CreateAgreement>,
+        terms: String,
+        deadline: i64,
+        payment_amount: u64
+    ) -> Result<()> {
+        // Agreement logic
+    }
+
+    pub fn record_supply_chain_event(
+        ctx: Context<RecordEvent>,
+        event_type: u8,
+        location: String,
+        timestamp: i64,
+        metadata: String
+    ) -> Result<()> {
+        // Event recording logic
+    }
 }
 
 #[account]
@@ -78,6 +97,26 @@ pub struct Product {
     pub price: u64,
     pub quantity: u64,
     pub created_at: i64,
+}
+
+#[account]
+pub struct Supplier {
+    pub key: Pubkey,
+    pub name: String,
+    pub certification: String,
+    pub products_supplied: u64,
+    // Additional fields needed
+}
+
+#[account]
+pub struct ShipmentRecord {
+    pub product: Pubkey,
+    pub origin: Pubkey,
+    pub destination: Pubkey,
+    pub timestamp: i64,
+    pub status: u8,
+    pub verified_by: Vec<Pubkey>,
+    // IoT data fields would go here
 }
 
 #[derive(Accounts)]
@@ -127,4 +166,30 @@ pub struct UpdateProduct<'info> {
         constraint = product.store == store.key()
     )]
     pub product: Account<'info, Product>,
+}
+
+#[derive(Accounts)]
+pub struct CreateAgreement<'info> {
+    #[account(mut)]
+    pub owner: Signer<'info>,
+    #[account(
+        mut,
+        constraint = store.owner == owner.key(),
+        constraint = store.is_active
+    )]
+    pub store: Account<'info, Store>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct RecordEvent<'info> {
+    #[account(mut)]
+    pub owner: Signer<'info>,
+    #[account(
+        mut,
+        constraint = store.owner == owner.key(),
+        constraint = store.is_active
+    )]
+    pub store: Account<'info, Store>,
+    pub system_program: Program<'info, System>,
 }
